@@ -124,6 +124,10 @@
       position: absolute;
       cursor: grab;
       user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: none;
+      /* Wajib agar drag touch di mobile tidak jadi scroll halaman */
+      touch-action: none;
       filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.35)) 
               drop-shadow(0 10px 10px rgb(0 0 0 / 0.25));
       transition: filter 0.2s ease, transform 0.1s ease;
@@ -135,12 +139,21 @@
     @media (max-width: 768px) {
       .phone {
         filter: drop-shadow(0 12px 14px rgb(0 0 0 / 0.3));
+        /* JANGAN pakai left/top/transform !important di sini —
+           itu mengunci posisi dan bikin drag JS tidak terlihat di mobile.
+           Posisi mobile di-set lewat JS (PHONE_LAYOUTS) agar tetap bisa digeser. */
       }
-      /* VERSI MOBILE — Posisi ini yang BENAR sesuai foto revisi1.png (jangan diubah sama sekali) */
-      #phone-1 { width: 230px !important; left: 33% !important; top: 17% !important; transform: rotate(-90deg) !important; }
-      #phone-2 { width: 230px !important; left: 20% !important; top: 37% !important; transform: rotate(0deg) !important; }
-      #phone-3 { width: 220px !important; left: 1% !important; top: 22% !important; transform: rotate(0deg) !important; }
-      #phone-4 { width: 105px !important; left: 25% !important; top: 18% !important; transform: rotate(-90deg) !important; }
+      /* Phones di atas teks hero supaya touch drag tidak ketutup layer lain */
+      #phones-container {
+        z-index: 35 !important;
+        pointer-events: none; /* tetap none di container */
+      }
+      #phones-container .phone {
+        pointer-events: auto;
+      }
+      .hero-bottom-bar {
+        z-index: 40 !important; /* CTA/RESET tetap bisa diklik */
+      }
     }
 
     .phone:active {
@@ -150,8 +163,9 @@
 
     .phone.dragging {
       transition: none !important;
-      z-index: 9999;
+      z-index: 99999 !important;
       filter: drop-shadow(0 40px 35px rgb(0 0 0 / 0.5));
+      animation: none !important;
       animation-play-state: paused !important;
     }
 
@@ -3148,136 +3162,252 @@
     }
     .theme-flash.on { opacity: 0.28; }
 
-    /* ========== DESKTOP ONLY GATE ========== */
-    .desktop-only-gate {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 999999;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(225, 29, 46, 0.18), transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(234, 179, 8, 0.2), transparent 45%),
-        linear-gradient(160deg, #111 0%, #1a1020 50%, #0c0c12 100%);
-      color: #fff;
-      text-align: center;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .desktop-only-gate__card {
-      width: min(420px, 100%);
-      padding: 2rem 1.5rem 1.75rem;
-      border-radius: 1.25rem;
-      background: rgba(255, 255, 255, 0.06);
-      border: 2px solid rgba(250, 204, 21, 0.45);
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.06),
-        8px 8px 0 #E11D2E,
-        0 24px 60px rgba(0,0,0,0.45);
-      backdrop-filter: blur(12px);
-      animation: gate-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    }
-    @keyframes gate-pop {
-      from { opacity: 0; transform: scale(0.88) translateY(16px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .desktop-only-gate__icon {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 1.1rem;
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      color: #111;
-      background: linear-gradient(135deg, #FACC15, #EAB308);
-      box-shadow: 4px 4px 0 #111, 0 0 24px rgba(250, 204, 21, 0.35);
-      animation: gate-icon-bounce 2.4s ease-in-out infinite;
-    }
-    @keyframes gate-icon-bounce {
-      0%, 100% { transform: translateY(0) rotate(-3deg); }
-      50% { transform: translateY(-6px) rotate(3deg); }
-    }
-    .desktop-only-gate__badge {
-      display: inline-block;
-      font-family: "Press Start 2P", system-ui;
-      font-size: 8px;
-      letter-spacing: 1px;
-      color: #FACC15;
-      margin-bottom: 0.75rem;
-      text-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
-    }
-    .desktop-only-gate__title {
-      font-family: "Press Start 2P", system-ui;
-      font-size: clamp(14px, 4.2vw, 18px);
-      line-height: 1.45;
-      letter-spacing: 1px;
-      margin-bottom: 1rem;
-      color: #fff;
-      text-shadow: 2px 2px 0 #E11D2E;
-    }
-    .desktop-only-gate__text {
-      font-size: 0.95rem;
-      line-height: 1.55;
-      color: rgba(255, 255, 255, 0.78);
-      margin-bottom: 1.25rem;
-    }
-    .desktop-only-gate__list {
-      text-align: left;
-      font-size: 0.82rem;
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.6;
-      margin: 0 auto 1.35rem;
-      padding: 0.85rem 1rem;
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      max-width: 320px;
-    }
-    .desktop-only-gate__list li {
-      margin-left: 1.1rem;
-      list-style: disc;
-      margin-bottom: 0.35rem;
-    }
-    .desktop-only-gate__hint {
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.45);
-      letter-spacing: 0.5px;
-    }
-    .desktop-only-gate__width {
-      display: inline-block;
-      margin-top: 0.65rem;
-      font-family: "Press Start 2P", system-ui;
-      font-size: 8px;
-      color: #67e8f9;
-      letter-spacing: 0.5px;
-    }
+    /* ========== MOBILE / RESPONSIVE LAYOUT ==========
+       (Desktop phone positions are NEVER changed here —
+        mobile phones use the existing @media max-width:768px rules only) */
+    @media (max-width: 768px) {
+      /* Nav brand compact */
+      .nav-brand-text { max-width: 140px; }
+      .nav-brand-text .nav-name {
+        font-size: 11px !important;
+        letter-spacing: 1.5px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .nav-brand-text .nav-sub { display: none; }
 
-    /* Tampilkan gate di HP / layar kecil (< 1024px) */
-    @media (max-width: 1023px) {
-      .desktop-only-gate {
+      /*
+        Hero copy — MOBILE ONLY: pindah ke BAWAH (nama + PORTFOLIO + AI VIDEO EDITOR).
+        Desktop tetap absolute top-left (class di HTML tidak diubah).
+      */
+      .hero-left-copy {
+        top: auto !important;
+        bottom: 4.25rem !important; /* di atas bar DRAG / RESET */
+        left: 0 !important;
+        right: 0 !important;
+        max-width: 100% !important;
+        width: 100%;
+        padding: 0 0.9rem;
+        z-index: 28;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        pointer-events: none; /* biar drag HP tidak ketutup teks */
+      }
+      .hero-left-copy > * {
+        pointer-events: auto;
+      }
+      .hero-page-badge {
+        font-size: 6px !important;
+        padding: 0.25rem 0.55rem !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 0.45rem !important;
+        align-self: center;
+      }
+      /* Nama horizontal di mobile supaya muat di bawah (desktop tetap vertikal zigzag) */
+      .vertical-zigzag-name {
         display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        align-items: center !important;
+        font-size: 20px !important;
+        line-height: 1.15 !important;
+        max-width: 100%;
+        gap: 1px 3px;
+        text-align: center;
       }
-      html.desktop-blocked,
-      html.desktop-blocked body {
-        overflow: hidden !important;
-        height: 100% !important;
-        touch-action: none;
+      .vertical-zigzag-name .letter {
+        margin-bottom: 0 !important;
+        /* netralisasi zigzag offset — hanya di mobile */
+        animation: letter-light-up-mobile 4.2s ease infinite !important;
       }
-      /* Sembunyikan konten utama agar tidak bisa diinteraksi di HP */
-      body.desktop-blocked > *:not(.desktop-only-gate):not(.theme-flash) {
-        visibility: hidden !important;
-        pointer-events: none !important;
+      .vertical-zigzag-name .space {
+        width: 0.45em !important;
+        height: auto !important;
+        display: inline-block !important;
+        flex-shrink: 0;
+      }
+      .vertical-zigzag-name::after {
+        display: none !important; /* light sweep vertikal tidak dipakai di layout horizontal mobile */
+      }
+      @keyframes letter-light-up-mobile {
+        0%, 100% {
+          filter: brightness(0.8);
+          transform: scale(0.96);
+          text-shadow:
+            2px 2px 0 #000,
+            0 0 8px #FACC15,
+            0 0 14px #FACC15;
+        }
+        8% {
+          filter: brightness(1.9);
+          transform: scale(1.08);
+          text-shadow:
+            2px 2px 0 #000,
+            0 0 14px #FACC15,
+            0 0 28px #FACC15;
+        }
+        22% {
+          filter: brightness(1.1);
+          transform: scale(1);
+        }
+      }
+      .hero-tagline {
+        max-width: 92% !important;
+        font-size: 10px !important;
+        padding: 5px 8px !important;
+        line-height: 1.35 !important;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 0.4rem !important;
+      }
+      .title-text {
+        font-size: 10px !important;
+        margin-top: 4px !important;
+        letter-spacing: 1.5px !important;
+        text-align: center;
+      }
+      .portfolio-text {
+        font-size: 13px !important;
+        letter-spacing: 3px !important;
+        margin-top: 0.45rem !important;
+        text-align: center;
+      }
+      .retro-dino-container { display: none; }
+
+      /* Bottom CTA — di bawah teks */
+      .hero-bottom-bar {
+        bottom: 0.65rem !important;
+        width: calc(100% - 1.25rem);
+        padding: 0 !important;
+        z-index: 30;
+      }
+      .hero-cta-bar {
+        font-size: 8px !important;
+        padding: 0.4rem 0.75rem !important;
+      }
+      .hero-particles { opacity: 0.55; }
+      .comic-burst { opacity: 0.35; transform: scale(0.75); }
+
+      /* Spider smaller / less intrusive on mobile */
+      .spider-rig {
+        right: 2% !important;
+        transform: scale(0.62) !important;
+        transform-origin: top right;
+        opacity: 0.9;
+      }
+      .spider-speech {
+        display: none !important; /* bubble can overflow mobile */
+      }
+
+      /* About */
+      .about-intro h2 {
+        font-size: 2.4rem !important;
+        line-height: 1 !important;
+      }
+      .about-stats {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.5rem !important;
+      }
+      .about-stat { padding: 0.65rem 0.4rem !important; }
+      .about-stat-num { font-size: 0.55rem !important; }
+      .about-stat-label { font-size: 0.55rem !important; }
+
+      /* Page 3 My Work window */
+      .page3-stage {
+        padding: 4.75rem 0.55rem 2rem !important;
+        min-height: auto;
+        align-items: flex-start !important;
+      }
+      .win-portfolio {
+        border-width: 2px;
+        border-radius: 6px 6px 0 0;
+      }
+      .win-titlebar-left span {
+        font-size: 11px;
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .win-body {
+        padding: 10px !important;
+        gap: 10px !important;
+        min-height: 0 !important;
+      }
+      .win-sidebar { gap: 8px; }
+      .win-folder-card {
+        padding: 8px 10px !important;
+      }
+      .win-folder-icon {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 13px !important;
+      }
+      .win-folder-meta h4 { font-size: 10px !important; }
+      .win-folder-meta p { font-size: 9px !important; }
+      .win-mywork-head h2 {
+        font-size: 20px !important;
+        letter-spacing: 2px !important;
+      }
+      .win-featured {
+        min-height: 0 !important;
+      }
+      .win-featured-info {
+        padding: 12px !important;
+      }
+      .win-featured-info h3 { font-size: 15px !important; }
+      .win-featured-preview { min-height: 160px !important; }
+      .win-projects-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+      }
+      .win-project-thumb .thumb-meta h5 { font-size: 9px !important; }
+      .win-project-thumb .thumb-meta span { font-size: 8px !important; }
+
+      /* Contact */
+      .contact-section {
+        padding: 3.25rem 1rem 2.75rem !important;
+      }
+      .contact-title-carved {
+        font-size: 22px !important;
+        letter-spacing: 1px !important;
+      }
+      .contact-form-panel { padding: 1rem !important; }
+      .contact-link-card { padding: 0.75rem !important; }
+      .site-footer .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      /* Project modal on phone */
+      #project-modal {
+        padding: 0.5rem !important;
+        align-items: flex-end !important;
+      }
+      #project-modal > div {
+        max-height: 88vh;
+        border-radius: 10px 10px 0 0;
       }
     }
 
-    @media (min-width: 1024px) {
-      .desktop-only-gate {
-        display: none !important;
-      }
+    @media (max-width: 380px) {
+      .vertical-zigzag-name { font-size: 16px !important; letter-spacing: 0 !important; }
+      .hero-left-copy { bottom: 4rem !important; }
+      .portfolio-text { font-size: 11px !important; }
+      .win-projects-grid { grid-template-columns: 1fr 1fr !important; }
+    }
+
+    /* Tablet mid range */
+    @media (min-width: 769px) and (max-width: 1023px) {
+      .vertical-zigzag-name { font-size: 56px !important; }
+      .page3-stage { padding: 5rem 1rem 3rem; }
+      .win-body { grid-template-columns: 1fr !important; }
+      .win-featured { grid-template-columns: 1fr 1.1fr !important; }
+      .win-sticky { display: none; }
     }
   </style>
   <script>
@@ -3291,37 +3421,11 @@
       } catch (e) {
         document.documentElement.classList.remove('dark');
       }
-      // Block small screens ASAP (desktop only site)
-      if (window.innerWidth < 1024) {
-        document.documentElement.classList.add('desktop-blocked');
-      }
     })();
   </script>
 </head>
 <body class="overflow-x-hidden">
   <div id="theme-flash" class="theme-flash" aria-hidden="true"></div>
-
-  <!-- DESKTOP ONLY WARNING (HP / layar kecil) -->
-  <div id="desktop-only-gate" class="desktop-only-gate" role="alertdialog" aria-modal="true" aria-labelledby="desktop-gate-title" aria-describedby="desktop-gate-desc">
-    <div class="desktop-only-gate__card">
-      <div class="desktop-only-gate__icon" aria-hidden="true">
-        <i class="fa-solid fa-desktop"></i>
-      </div>
-      <div class="desktop-only-gate__badge">⚠ WARNING · DESKTOP ONLY</div>
-      <h1 id="desktop-gate-title" class="desktop-only-gate__title">BUKA DI DESKTOP</h1>
-      <p id="desktop-gate-desc" class="desktop-only-gate__text">
-        Portfolio ini dirancang khusus untuk <strong>layar desktop</strong>.
-        Versi HP / tablet tidak didukung agar pengalaman drag phone, layout, dan animasi tetap optimal.
-      </p>
-      <ul class="desktop-only-gate__list">
-        <li>Gunakan laptop atau PC</li>
-        <li>Lebar layar minimal <strong>1024px</strong></li>
-        <li>Rotate ke landscape belum cukup — butuh desktop</li>
-      </ul>
-      <p class="desktop-only-gate__hint">Silakan buka ulang website ini di komputer.</p>
-      <div class="desktop-only-gate__width" id="desktop-gate-width">LEBAR LAYAR: —</div>
-    </div>
-  </div>
 
   <!-- NAV -->
   <nav id="main-nav" class="fixed top-0 left-0 right-0 z-50 nav-glass">
@@ -3330,9 +3434,9 @@
         <div class="w-9 h-9 bg-[#E11D2E] flex items-center justify-center nav-logo-box">
           <span class="retro-font text-white text-xl font-bold tracking-tighter">NR</span>
         </div>
-        <div>
-          <div class="font-bold tracking-[3px] text-sm md:text-lg leading-tight">NAFIQUR ROHMAN</div>
-          <div class="text-[9px] opacity-55 -mt-0.5 tracking-widest">Y2K · AI VIDEO · EST 2007</div>
+        <div class="nav-brand-text">
+          <div class="nav-name font-bold tracking-[3px] text-sm md:text-lg leading-tight">NAFIQUR ROHMAN</div>
+          <div class="nav-sub text-[9px] opacity-55 -mt-0.5 tracking-widest">Y2K · AI VIDEO · EST 2007</div>
         </div>
       </a>
 
@@ -3421,10 +3525,11 @@
     <div class="comic-burst text-2xl bottom-[28%] left-[8%] text-[#0891B2] hidden md:block" style="animation-delay: 0.6s;">✧</div>
     
     <!-- Left side text -->
-    <div class="absolute top-[10%] left-[4.5%] z-30">
+    <div class="hero-left-copy absolute top-[10%] left-[4.5%] z-30">
       <div class="hero-page-badge">
         <span class="w-1.5 h-1.5 rounded-full bg-[#E11D2E] animate-pulse"></span>
-        PAGE 01 · Y2K · 2007 — 2026
+        <span class="hidden sm:inline">PAGE 01 · Y2K · 2007 — 2026</span>
+        <span class="sm:hidden">Y2K · 07—26</span>
       </div>
       
       <!-- NAMA - Vertikal Zigzag + Sequential Light Animation -->
@@ -3519,12 +3624,13 @@
     </div>
 
     <!-- Bottom instruction + reset -->
-    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-wrap items-center justify-center gap-2 md:gap-x-3 px-3">
+    <div class="hero-bottom-bar absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-wrap items-center justify-center gap-2 md:gap-x-3 px-3">
       <div class="hero-cta-bar flex items-center gap-x-2 text-[9px] md:text-[10px] bg-black/70 px-3 md:px-4 py-1.5 border border-white/20 rounded-full">
         <i class="fa-solid fa-hand-pointer mr-1 text-[#EAB308]"></i>
-        <span class="tracking-widest">DRAG THE PHONES — THEY SNAP BACK HOME</span>
+        <span class="tracking-widest hidden sm:inline">DRAG THE PHONES — THEY SNAP BACK HOME</span>
+        <span class="tracking-widest sm:hidden">DRAG PHONES</span>
       </div>
-      <button onclick="resetAllPhones()" 
+      <button type="button" onclick="resetAllPhones()" 
               class="reset-btn-glow text-[10px] px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/30 transition-all rounded-full tracking-widest">
         RESET
       </button>
@@ -4018,18 +4124,87 @@
     }
 
     // ========== DRAGGABLE PHONES WITH SNAP BACK ==========
+    // Posisi home desktop & mobile (nilai tidak diubah dari layout user).
+    // Disimpan di JS (bukan CSS !important) agar drag mobile bisa menggeser left/top.
+    const PHONE_LAYOUTS = {
+      desktop: {
+        'phone-1': { left: '44%', top: '15%', width: '245px', transform: 'rotate(-90deg)', zIndex: '27' },
+        'phone-2': { left: '39.5%', top: '36%', width: '248px', transform: 'rotate(0deg)', zIndex: '31' },
+        'phone-3': { left: '31.5%', top: '20%', width: '255px', transform: 'rotate(0deg)', zIndex: '25' },
+        'phone-4': { left: '15%', top: '30%', width: '118px', transform: 'rotate(-80deg)', zIndex: '26' }
+      },
+      // Mobile — nilai sama seperti CSS revisi user (left/top/width/rotate)
+      mobile: {
+        'phone-1': { left: '33%', top: '17%', width: '230px', transform: 'rotate(-90deg)', zIndex: '27' },
+        'phone-2': { left: '10%', top: '37%', width: '230px', transform: 'rotate(0deg)', zIndex: '31' },
+        'phone-3': { left: '-10%', top: '22%', width: '220px', transform: 'rotate(0deg)', zIndex: '25' },
+        'phone-4': { left: '14%', top: '28%', width: '80px', transform: 'rotate(180deg)', zIndex: '26' }
+      }
+    };
+
     let activeDrag = null;
     const phones = [];
 
+    function isMobilePhoneLayout() {
+      return window.innerWidth <= 768;
+    }
+
+    function getPhoneLayoutKey() {
+      return isMobilePhoneLayout() ? 'mobile' : 'desktop';
+    }
+
+    function applyPhoneLayout(mode) {
+      const layout = PHONE_LAYOUTS[mode] || PHONE_LAYOUTS.desktop;
+      Object.keys(layout).forEach((id) => {
+        const phone = document.getElementById(id);
+        const pos = layout[id];
+        if (!phone || !pos) return;
+
+        phone.style.left = pos.left;
+        phone.style.top = pos.top;
+        phone.style.width = pos.width;
+        phone.style.transform = pos.transform;
+        phone.style.zIndex = pos.zIndex;
+
+        // Home positions for snap-back
+        phone.dataset.homeLeft = pos.left;
+        phone.dataset.homeTop = pos.top;
+        phone.dataset.homeTransform = pos.transform;
+        phone.dataset.homeWidth = pos.width;
+        phone.dataset.originalZ = pos.zIndex;
+
+        // Store per-breakpoint for resize
+        if (mode === 'mobile') {
+          phone.dataset.mobileLeft = pos.left;
+          phone.dataset.mobileTop = pos.top;
+          phone.dataset.mobileWidth = pos.width;
+          phone.dataset.mobileTransform = pos.transform;
+        } else {
+          phone.dataset.desktopLeft = pos.left;
+          phone.dataset.desktopTop = pos.top;
+          phone.dataset.desktopWidth = pos.width;
+          phone.dataset.desktopTransform = pos.transform;
+        }
+      });
+
+      // Phone 4 float rotation variable
+      const phone4 = document.getElementById('phone-4');
+      if (phone4) {
+        const rotMatch = (phone4.style.transform || '').match(/rotate\(([^)]+)deg\)/);
+        const rot = rotMatch ? rotMatch[1] : (mode === 'mobile' ? '180' : '-80');
+        phone4.style.setProperty('--rot', `${rot}deg`);
+      }
+    }
+
     function captureHomePositions() {
       const container = document.getElementById('phones-container');
+      if (!container) return;
       const phoneEls = container.querySelectorAll('.phone');
 
       phoneEls.forEach((phone) => {
-        // Always read current computed/inline style as the new "home"
         const homeLeft = phone.style.left || getComputedStyle(phone).left;
         const homeTop = phone.style.top || getComputedStyle(phone).top;
-        const homeTransform = phone.style.transform || getComputedStyle(phone).transform || 'rotate(0deg)';
+        const homeTransform = phone.style.transform || 'rotate(0deg)';
 
         phone.dataset.homeLeft = homeLeft;
         phone.dataset.homeTop = homeTop;
@@ -4039,133 +4214,105 @@
 
     function initDraggablePhones() {
       const container = document.getElementById('phones-container');
+      if (!container) return;
       const phoneEls = container.querySelectorAll('.phone');
 
-      phoneEls.forEach((phone, index) => {
-        // Initial capture (will be re-captured after layout settles)
-        captureHomePositions();
+      // Apply correct layout first (mobile or desktop) so inline styles match screen
+      applyPhoneLayout(getPhoneLayoutKey());
 
-        // Store original z-index for restoration after drag
-        phone.dataset.originalZ = phone.style.zIndex || '22';
+      phoneEls.forEach((phone, index) => {
         phone.dataset.index = index;
 
-        // Pointer events
+        // Pointer events (works for mouse + touch)
         phone.addEventListener('pointerdown', (e) => startDrag(e, phone));
-        
-        // Prevent image drag ghost
+
+        // Prevent image drag ghost / long-press image menu
         phone.addEventListener('dragstart', (e) => e.preventDefault());
+        phone.addEventListener('contextmenu', (e) => e.preventDefault());
 
         phones.push(phone);
       });
 
-      // Set floating rotation variable for Phone 4 based on its current transform
-      const phone4 = document.getElementById('phone-4');
-      if (phone4) {
-        setTimeout(() => {
-          const currentTransform = phone4.style.transform || '';
-          const rotMatch = currentTransform.match(/rotate\(([^)]+)deg\)/);
-          const rot = rotMatch ? rotMatch[1] : '-80';
-          phone4.style.setProperty('--rot', `${rot}deg`);
-        }, 300);
-      }
-
-      // Initial capture + force correct layout after everything settles
-      setTimeout(() => {
-        saveBreakpointPositions();
-        forceCorrectLayout();
-      }, 180);
-
-      // === VERY STRONG STABILITY SYSTEM ===
-      // Tujuan: Saat layar diubah ukurannya (desktop <-> mobile), posisi handphone TIDAK ikut tertarik / berubah
-      // Desktop layout tetap di desktop, Mobile layout tetap di mobile
-
       let resizeTimer = null;
+      let lastMode = getPhoneLayoutKey();
 
       function forceCorrectLayout() {
-        const phoneEls = document.querySelectorAll('#phones-container .phone');
-        const isMobile = window.innerWidth <= 768;
+        // Jangan ganggu saat user sedang drag
+        if (activeDrag) return;
 
-        phoneEls.forEach(phone => {
-          // Matikan transisi total saat force
-          phone.style.transition = 'none';
+        const mode = getPhoneLayoutKey();
+        applyPhoneLayout(mode);
+        lastMode = mode;
 
-          if (isMobile) {
-            // Paksa pakai posisi mobile yang sudah kamu atur
-            phone.style.left   = phone.dataset.mobileLeft   || phone.style.left;
-            phone.style.top    = phone.dataset.mobileTop    || phone.style.top;
-            phone.style.width  = phone.dataset.mobileWidth  || phone.style.width;
-            phone.style.transform = phone.dataset.mobileTransform || phone.style.transform;
-          } else {
-            // Paksa pakai posisi desktop (yang sudah kamu sesuaikan)
-            phone.style.left   = phone.dataset.desktopLeft   || phone.style.left;
-            phone.style.top    = phone.dataset.desktopTop    || phone.style.top;
-            phone.style.width  = phone.dataset.desktopWidth  || phone.style.width;
-            phone.style.transform = phone.dataset.desktopTransform || phone.style.transform;
-          }
+        const phoneElsNow = document.querySelectorAll('#phones-container .phone');
+        phoneElsNow.forEach(p => {
+          p.style.transition = 'none';
         });
-
-        // Nyalakan kembali transisi setelah layout stabil
         requestAnimationFrame(() => {
-          phoneEls.forEach(p => p.style.transition = '');
+          phoneElsNow.forEach(p => { p.style.transition = ''; });
         });
       }
 
       function handleResize() {
-        // Langsung matikan transisi supaya tidak ada efek "tertarik"
-        const phoneEls = document.querySelectorAll('#phones-container .phone');
-        phoneEls.forEach(p => p.style.transition = 'none');
+        if (activeDrag) return;
+        const phoneElsNow = document.querySelectorAll('#phones-container .phone');
+        phoneElsNow.forEach(p => { p.style.transition = 'none'; });
 
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
-          forceCorrectLayout();
-        }, 120);
-      }
-
-      // Simpan posisi desktop & mobile saat awal load
-      function saveBreakpointPositions() {
-        const phoneEls = document.querySelectorAll('#phones-container .phone');
-        const isMobile = window.innerWidth <= 768;
-
-        phoneEls.forEach(phone => {
-          if (isMobile) {
-            phone.dataset.mobileLeft = phone.style.left;
-            phone.dataset.mobileTop = phone.style.top;
-            phone.dataset.mobileWidth = phone.style.width;
-            phone.dataset.mobileTransform = phone.style.transform;
-          } else {
-            phone.dataset.desktopLeft = phone.style.left;
-            phone.dataset.desktopTop = phone.style.top;
-            phone.dataset.desktopWidth = phone.style.width;
-            phone.dataset.desktopTransform = phone.style.transform;
+          const mode = getPhoneLayoutKey();
+          // Only re-apply when breakpoint actually changes
+          if (mode !== lastMode) {
+            forceCorrectLayout();
           }
-        });
+        }, 120);
       }
 
       window.addEventListener('resize', handleResize);
       window.addEventListener('orientationchange', () => {
-        setTimeout(handleResize, 60);
+        setTimeout(() => {
+          lastMode = '';
+          forceCorrectLayout();
+        }, 80);
       });
 
-      // Simpan posisi awal untuk kedua breakpoint
-      setTimeout(saveBreakpointPositions, 200);
+      // Re-apply once after layout paint (fonts/images)
+      setTimeout(() => forceCorrectLayout(), 200);
 
-      // Global move + up listeners
-      document.addEventListener('pointermove', onPointerMove);
+      // Global move + up listeners (pointer covers touch on modern mobile)
+      document.addEventListener('pointermove', onPointerMove, { passive: false });
       document.addEventListener('pointerup', onPointerUp);
       document.addEventListener('pointercancel', onPointerUp);
     }
 
     function startDrag(e, phone) {
+      // Hanya primary button / touch
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+
       e.preventDefault();
-      
-      const container = document.getElementById('phones-container');
-      
+      e.stopPropagation();
+
+      // Pastikan home position sesuai breakpoint aktif
+      const mode = getPhoneLayoutKey();
+      const layout = PHONE_LAYOUTS[mode][phone.id];
+      if (layout) {
+        phone.dataset.homeLeft = layout.left;
+        phone.dataset.homeTop = layout.top;
+        phone.dataset.homeTransform = layout.transform;
+        phone.dataset.homeWidth = layout.width;
+        phone.dataset.originalZ = layout.zIndex;
+      }
+
+      const leftPct = parseFloat(phone.style.left);
+      const topPct = parseFloat(phone.style.top);
+
       activeDrag = {
         phone,
+        pointerId: e.pointerId,
         startX: e.clientX,
         startY: e.clientY,
-        origLeft: parseFloat(phone.style.left),
-        origTop: parseFloat(phone.style.top),
+        origLeft: Number.isFinite(leftPct) ? leftPct : parseFloat(layout?.left) || 0,
+        origTop: Number.isFinite(topPct) ? topPct : parseFloat(layout?.top) || 0,
         hasMoved: false,
         movedDistance: 0
       };
@@ -4173,13 +4320,22 @@
       phone.classList.add('dragging');
       phone.style.transition = 'none';
       phone.style.zIndex = '99999';
+      // Pause float animation on phone-4 while dragging
+      phone.style.animation = 'none';
 
-      // Capture pointer
-      phone.setPointerCapture(e.pointerId);
+      try {
+        phone.setPointerCapture(e.pointerId);
+      } catch (err) {
+        // ignore capture errors on some browsers
+      }
     }
 
     function onPointerMove(e) {
       if (!activeDrag) return;
+      if (activeDrag.pointerId != null && e.pointerId !== activeDrag.pointerId) return;
+
+      // Cegah scroll halaman saat drag di mobile
+      e.preventDefault();
 
       const { phone, startX, startY, origLeft, origTop } = activeDrag;
       const dx = e.clientX - startX;
@@ -4188,9 +4344,9 @@
       activeDrag.movedDistance = Math.hypot(dx, dy);
       if (activeDrag.movedDistance > 4) activeDrag.hasMoved = true;
 
-      // Use the phones container size for more accurate movement (more stable than full window)
       const container = document.getElementById('phones-container');
       const rect = container.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
 
       const newLeft = origLeft + (dx / rect.width * 100);
       const newTop = origTop + (dy / rect.height * 100);
@@ -4198,43 +4354,41 @@
       phone.style.left = `${newLeft}%`;
       phone.style.top = `${newTop}%`;
 
-      // Slight scale + rotate nudge while dragging
-      const currentRotate = phone.dataset.homeTransform || 'rotate(0deg)';
-      phone.style.transform = `${currentRotate} scale(1.04)`;
+      const homeRotate = phone.dataset.homeTransform || 'rotate(0deg)';
+      phone.style.transform = `${homeRotate} scale(1.05)`;
     }
 
     function onPointerUp(e) {
       if (!activeDrag) return;
+      if (activeDrag.pointerId != null && e.pointerId !== activeDrag.pointerId) return;
 
       const { phone, hasMoved, movedDistance } = activeDrag;
-      
-      phone.classList.remove('dragging');
-      // Restore the phone's original intended z-index (some are layered higher)
-      phone.style.zIndex = phone.dataset.originalZ || '22';
 
-      // Return to home position with spring animation
+      phone.classList.remove('dragging');
+      phone.style.zIndex = phone.dataset.originalZ || '22';
+      phone.style.animation = ''; // restore phone-4 float if any
+
       const homeLeft = phone.dataset.homeLeft;
       const homeTop = phone.dataset.homeTop;
       const homeTransform = phone.dataset.homeTransform || 'rotate(0deg)';
 
       phone.classList.add('returning');
       phone.style.transition = 'left 0.72s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.72s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.72s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      
+
       phone.style.left = homeLeft;
       phone.style.top = homeTop;
       phone.style.transform = homeTransform;
 
-      // Clean up after animation
       const cleanup = () => {
         phone.classList.remove('returning');
         phone.style.transition = '';
         phone.removeEventListener('transitionend', cleanup);
       };
       phone.addEventListener('transitionend', cleanup, { once: true });
+      // Fallback cleanup if transitionend doesn't fire
+      setTimeout(cleanup, 800);
 
-      // Click detection (if barely moved)
       if (!hasMoved || movedDistance < 9) {
-        // Small delay so the snap doesn't fight the click animation
         setTimeout(() => {
           activatePhone(phone);
         }, 80);
@@ -4321,22 +4475,21 @@
 
     function resetAllPhones(useTransition = true) {
       const container = document.getElementById('phones-container');
+      if (!container) return;
       const phoneEls = container.querySelectorAll('.phone');
+      const mode = getPhoneLayoutKey();
+      const layout = PHONE_LAYOUTS[mode];
 
       phoneEls.forEach(phone => {
-        // Prioritaskan posisi sesuai breakpoint (desktop/mobile) yang sudah disimpan
-        const isMobile = window.innerWidth <= 768;
-        let homeLeft, homeTop, homeTransform;
+        const pos = layout[phone.id];
+        const homeLeft = pos?.left || phone.dataset.homeLeft;
+        const homeTop = pos?.top || phone.dataset.homeTop;
+        const homeTransform = pos?.transform || phone.dataset.homeTransform || 'rotate(0deg)';
 
-        if (isMobile) {
-          homeLeft = phone.dataset.mobileLeft || phone.dataset.homeLeft;
-          homeTop = phone.dataset.mobileTop || phone.dataset.homeTop;
-          homeTransform = phone.dataset.mobileTransform || phone.dataset.homeTransform || 'rotate(0deg)';
-        } else {
-          homeLeft = phone.dataset.desktopLeft || phone.dataset.homeLeft;
-          homeTop = phone.dataset.desktopTop || phone.dataset.homeTop;
-          homeTransform = phone.dataset.desktopTransform || phone.dataset.homeTransform || 'rotate(0deg)';
-        }
+        // Sync home dataset
+        phone.dataset.homeLeft = homeLeft;
+        phone.dataset.homeTop = homeTop;
+        phone.dataset.homeTransform = homeTransform;
 
         if (useTransition) {
           phone.classList.add('returning');
@@ -5294,38 +5447,6 @@
       console.log('%c[Portfolio] Scrolling spider loaded — web follows you to the end.', 'color:#a855f7');
     }
 
-    // ========== DESKTOP ONLY GATE ==========
-    function initDesktopOnlyGate() {
-      const MIN_WIDTH = 1024;
-      const gate = document.getElementById('desktop-only-gate');
-      const widthLabel = document.getElementById('desktop-gate-width');
-
-      function updateGate() {
-        const w = window.innerWidth;
-        const blocked = w < MIN_WIDTH;
-
-        document.documentElement.classList.toggle('desktop-blocked', blocked);
-        document.body.classList.toggle('desktop-blocked', blocked);
-
-        if (widthLabel) {
-          widthLabel.textContent = `LEBAR LAYAR: ${w}px` + (blocked ? ' · TERLALU KECIL' : ' · OK');
-        }
-
-        // Cegah scroll di HP
-        if (blocked) {
-          document.documentElement.style.overflow = 'hidden';
-          document.body.style.overflow = 'hidden';
-        } else {
-          document.documentElement.style.overflow = '';
-          document.body.style.overflow = '';
-        }
-      }
-
-      updateGate();
-      window.addEventListener('resize', updateGate, { passive: true });
-      window.addEventListener('orientationchange', () => setTimeout(updateGate, 80), { passive: true });
-    }
-
     // ========== THEME TOGGLE (default light) ==========
     function initThemeToggle() {
       const flash = document.getElementById('theme-flash');
@@ -5411,7 +5532,6 @@
     // ========== INITIALIZE EVERYTHING ==========
     function init() {
       initTailwind();
-      initDesktopOnlyGate();
       initThemeToggle();
       initDraggablePhones();
       initNavigation();
